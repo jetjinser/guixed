@@ -3,8 +3,10 @@
 ;; environments.
 
 (use-modules (gnu) (gnu system nss))
+(use-modules (srfi srfi-1))
+
 (use-service-modules networking ssh)
-(use-package-modules bootloaders ssh certs shells)
+(use-package-modules bootloaders ssh certs shells nvi text-editors)
 
 (operating-system
   (host-name "cosette")
@@ -38,7 +40,7 @@
                                         "audio" "video")))
                %base-user-accounts))
 
-  (packages %base-packages)
+  (packages (lset-difference eqv? %base-packages (list nvi mg)))
 
   (services (append (list (service dhcp-client-service-type)
                           (service openssh-service-type
