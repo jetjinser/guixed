@@ -1,0 +1,15 @@
+[alias]
+	br = "branch"
+	ci = "commit"
+	cim = "commit -m"
+	civ = "commit -v"
+	co = "checkout"
+	dft = "difftool"
+	st = "status"
+
+[init]
+	defaultBranch = "master"
+
+[user]
+	email = "aimer@purejs.icu"
+	name = "Jinser Kafka"
