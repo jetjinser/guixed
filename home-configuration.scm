@@ -17,6 +17,7 @@
   (packages (list neovim git))
   (services (list
     (service home-fish-service-type
-      (home-fish-configuration))
+      (home-fish-configuration
+	(abbreviations '(("g" . "git")))))
     (service home-xdg-configuration-files-service-type
       (list `("git/config" ,(local-file "gitconfig")))))))
