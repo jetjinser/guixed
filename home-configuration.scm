@@ -8,13 +8,14 @@
              (gnu packages)
              (gnu packages vim)
              (gnu packages version-control)
+             (gnu packages tmux)
              (gnu services)
              (guix gexp)
              (gnu home services)
              (gnu home services shells))
 
 (home-environment
-  (packages (list neovim git))
+  (packages (list neovim git tmux))
   (services (list
     (service home-fish-service-type
       (home-fish-configuration
