@@ -12,13 +12,14 @@
              (gnu services)
              (guix gexp)
              (gnu home services)
-             (gnu home services shells))
+       (pkgs transmission)
+       (gnu home services shells))
 
 (home-environment
-  (packages (list neovim git tmux))
+  (packages (list neovim git tmux transmission*))
   (services (list
-    (service home-fish-service-type
-      (home-fish-configuration
-	(abbreviations '(("g" . "git")))))
-    (service home-xdg-configuration-files-service-type
-      (list `("git/config" ,(local-file "gitconfig")))))))
+              (service home-fish-service-type
+                (home-fish-configuration
+                 (abbreviations '(("g" . "git")))))
+              (service home-xdg-configuration-files-service-type
+                (list `("git/config" ,(local-file "gitconfig")))))))
