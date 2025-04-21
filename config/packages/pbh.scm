@@ -1,4 +1,4 @@
-(define-module (pkgs pbh)
+(define-module (config packages pbh)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix download)

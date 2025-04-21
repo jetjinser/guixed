@@ -1,4 +1,4 @@
-(define-module (pkgs transmission)
+(define-module (config packages transmission)
   #:use-module (guix packages)
   #:use-module (guix git-download)
   #:use-module (gnu packages bittorrent)
