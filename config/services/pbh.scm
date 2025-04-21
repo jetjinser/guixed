@@ -1,4 +1,4 @@
-(define-module (sss pbh)
+(define-module (config services pbh)
   #:use-module (pkgs pbh)
   #:use-module (gnu services)
   #:use-module (gnu services admin)
