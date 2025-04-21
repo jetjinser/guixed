@@ -6,12 +6,15 @@
   #:use-module (gnu packages vim)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages tmux)
+  #:use-module (gnu packages curl)
+  #:use-module (gnu packages shellutils)
   #:use-module (gnu services)
   #:use-module (guix gexp)
   #:use-module (config packages transmission))
 
 (home-environment
-  (packages (list neovim git tmux transmission*))
+  (packages (list neovim git tmux curl
+                  transmission* direnv))
   (services (list
               (service home-fish-service-type
                 (home-fish-configuration
