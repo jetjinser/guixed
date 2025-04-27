@@ -6,7 +6,7 @@
   #:use-module (config systems cosette))
 
 (define cosette
-  (call-with-input-file "../../files/cosette.pub" get-string-all))
+  (call-with-input-file "files/cosette.host.pub" get-string-all))
 
 (list (machine
         (operating-system %cosette)
