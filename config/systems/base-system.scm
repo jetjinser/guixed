@@ -5,7 +5,7 @@
   #:export (%base-system))
 
 (use-service-modules networking ssh)
-(use-package-modules bootloaders nvi text-editors)
+(use-package-modules bootloaders shells nvi text-editors)
 
 (define %base-system
   (operating-system
@@ -31,10 +31,10 @@
                   (name "jinser")
                   (comment "Jinser Kafka")
                   (group "users")
-                  ; (shell (file-append fish "/bin/fish"))
+                  (shell (file-append fish "/bin/fish"))
                   (home-directory "/home/jinser")
                   (supplementary-groups '("wheel" "netdev" "transmission"
-                                          "audio" "video")))
+                                          "audio" "video" "readymedia")))
                  %base-user-accounts))
 
     (packages (lset-difference eqv? %base-packages (list nvi mg)))

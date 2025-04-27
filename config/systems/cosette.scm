@@ -4,7 +4,7 @@
   #:use-module (config packages transmission)
   #:export (%cosette))
 
-(use-service-modules file-sharing sysctl networking ssh)
+(use-service-modules file-sharing sysctl networking ssh upnp)
 (use-package-modules bootloaders ssh shells)
 
 (define %transmission-daemon-configuration-directory
@@ -31,6 +31,12 @@
                       %base-file-systems))
 
       (services (append (list (service dhcp-client-service-type)
+                              (service nftables-service-type
+                                       (nftables-configuration
+                                         (ruleset
+                                           (local-file "../../files/rulesets.nft"
+                                                       "rulesets.nft"))))
+                              (service ntp-service-type (ntp-configuration))
                               (service openssh-service-type
                                        (openssh-configuration
                                          (openssh openssh-sans-x)
@@ -49,13 +55,29 @@
                                          (rpc-username "jinser")
                                          (rpc-password "{2b79a09b99bc2b99da06665666853bd337052a05ypW43WFG")
                                          (rpc-whitelist '("127.0.0.1" "::1" "192.168.*.*"))
-                                         (lpd-enabled? #t)
                                          (download-dir "/srv/store/t")
                                          (incomplete-dir-enabled? #t)
                                          (incomplete-dir (string-append %transmission-daemon-configuration-directory
                                                                         "/.incomplete"))
                                          (speed-limit-up-enabled? #t)
-                                         (speed-limit-up 450))))
+                                         (speed-limit-up 800)
+                                         (alt-speed-enabled? #t)
+                                         (alt-speed-up 450) ; 450 KB/s
+                                         (alt-speed-down 10000000) ; 10 GB/s
+                                         (alt-speed-time-enabled? #t)
+                                         (alt-speed-time-begin 480) ; 8am
+                                         (alt-speed-time-end 60) ; 1am
+                                         (download-queue-size 10) ; default = 5
+                                         (lpd-enabled? #t)))
+                              (service readymedia-service-type
+                                       (readymedia-configuration
+                                         (friendly-name "cosette-landing")
+                                         (port 9002)
+                                         (media-directories
+                                           (list (readymedia-media-directory (path "/srv/store/pv")
+                                                                             (types '(P V)))
+                                                 (readymedia-media-directory (path "/srv/store/v")
+                                                                             (types '(V))))))))
                         (modify-services %base-services
                                          (sysctl-service-type
                                            config =>
