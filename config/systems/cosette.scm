@@ -30,6 +30,11 @@
                               (mount-point "/boot/efi")
                               (type "vfat")))
                       %base-file-systems))
+      (swap-devices (list
+                      (swap-space
+                        (target "/swap/swapfile")
+                        (dependencies (filter (file-system-mount-point-predicate "/")
+                                              file-systems)))))
 
       (services (append (list (service dhcp-client-service-type)
                               (service nftables-service-type
