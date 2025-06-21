@@ -2,6 +2,7 @@
   #:use-module (gnu)
   #:use-module (config systems base-system)
   #:use-module (config packages transmission)
+  #:use-module (rosenthal services networking)
   #:export (%cosette))
 
 (use-service-modules file-sharing sysctl networking ssh upnp)
@@ -77,7 +78,9 @@
                                            (list (readymedia-media-directory (path "/srv/store/pv")
                                                                              (types '(P V)))
                                                  (readymedia-media-directory (path "/srv/store/v")
-                                                                             (types '(V))))))))
+                                                                             (types '(V)))))))
+                              (service tailscale-service-type
+                                       (tailscale-configuration)))
                         (modify-services %base-services
                                          (sysctl-service-type
                                            config =>
