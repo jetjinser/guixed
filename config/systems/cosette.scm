@@ -5,7 +5,7 @@
   #:use-module (rosenthal services networking)
   #:export (%cosette))
 
-(use-service-modules file-sharing sysctl networking ssh upnp)
+(use-service-modules file-sharing sysctl networking ssh upnp avahi)
 (use-package-modules bootloaders ssh shells)
 
 (define %transmission-daemon-configuration-directory
@@ -53,6 +53,10 @@
                                              `(("jinser" ,dorothy ,cosette)
                                                ("root" ,dorothy ,cosette))))
                                          (port-number 22)))
+                              (service avahi-service-type
+                                       (avahi-configuration
+                                         (host-name host-name)
+                                         (wide-area? #t)))
                               (service transmission-daemon-service-type
                                        (transmission-daemon-configuration
                                          (transmission transmission*)
