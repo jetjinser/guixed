@@ -39,7 +39,7 @@
 
     (packages (lset-difference eqv? %base-packages (list nvi mg)))
 
-    (services (append (list (service dhcp-client-service-type)
+    (services (append (list (service dhcpcd-service-type)
                             (service openssh-service-type
                                      (openssh-configuration
                                        (openssh openssh-sans-x)
