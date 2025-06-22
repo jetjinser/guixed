@@ -36,7 +36,7 @@
                         (dependencies (filter (file-system-mount-point-predicate "/")
                                               file-systems)))))
 
-      (services (append (list (service dhcp-client-service-type)
+      (services (append (list (service dhcpcd-service-type)
                               (service nftables-service-type
                                        (nftables-configuration
                                          (ruleset
