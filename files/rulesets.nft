@@ -22,11 +22,15 @@ table inet filter {
     tcp dport ssh accept
 
     # services
-    ip saddr { 192.168.31.111, 192.168.31.222 } tcp dport 9001-9002 accept
-    ip saddr { 192.168.31.111, 192.168.31.222 } udp dport 1900 accept
+    # ip saddr { 192.168.31.111, 192.168.31.222 } tcp dport 9001-9002 accept
+    # ip saddr { 192.168.31.111, 192.168.31.222 } udp dport 1900 accept
 
-    ip saddr 192.168.31.0-192.168.31.255 tcp dport 25565 accept
-    ip saddr 192.168.31.0-192.168.31.255 udp dport 25565 accept
+    # ip saddr 192.168.31.0-192.168.31.255 tcp dport 25565 accept
+    # ip saddr 192.168.31.0-192.168.31.255 udp dport 25565 accept
+
+    # allow LAN
+    ip saddr 192.168.1.0/24 accept
+    ip6 saddr fe80::/10 accept
 
     # reject everything else
     reject with icmpx type port-unreachable
