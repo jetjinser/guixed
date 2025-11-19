@@ -2,6 +2,7 @@
   #:use-module (gnu)
   #:use-module (config systems base-system)
   #:use-module (config packages transmission)
+  #:use-module (config services avahi-publish)
   #:use-module (rosenthal services networking)
   #:export (%cosette))
 
@@ -57,6 +58,8 @@
                                        (avahi-configuration
                                          (host-name host-name)
                                          (wide-area? #t)))
+                              (service avahi-publish-service-type
+                                       (avahi-publish-configuration))
                               (service transmission-daemon-service-type
                                        (transmission-daemon-configuration
                                          (transmission transmission*)
