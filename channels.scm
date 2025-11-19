@@ -3,7 +3,7 @@
         (url "https://codeberg.org/guix/guix.git")
         (branch "master")
         (commit
-          "8daae75de3670594dfcb63b6ae6f1603ca6f7971")
+          "e7d2cb411bac9dc58b5066799f6930b7bcb13986")
         (introduction
           (make-channel-introduction
             "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -14,7 +14,7 @@
         (url "https://gitlab.com/nonguix/nonguix")
         (branch "master")
         (commit
-          "3f4a1907cae9b0def09d1549c491bb4e307b9097")
+          "56038f08e5d64a469b62a901996f723e4df70c41")
         (introduction
           (make-channel-introduction
             "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -25,7 +25,7 @@
         (url "https://codeberg.org/hako/rosenthal.git")
         (branch "trunk")
         (commit
-          "88283b8d959db6ed0e8a9f68dfa018eaafd97b2d")
+          "7bda91c1dacea185fe7f0720b82f2d799d857059")
         (introduction
           (make-channel-introduction
             "7677db76330121a901604dfbad19077893865f35"
