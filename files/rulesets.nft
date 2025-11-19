@@ -29,8 +29,11 @@ table inet filter {
     # ip saddr 192.168.31.0-192.168.31.255 udp dport 25565 accept
 
     # allow LAN
-    ip saddr 192.168.1.0/24 accept
+    ip saddr 192.168.0.0/16 accept
     ip6 saddr fe80::/10 accept
+
+    ip daddr 239.255.255.250 udp dport 1900 accept
+    udp dport 1900 accept
 
     # reject everything else
     reject with icmpx type port-unreachable
