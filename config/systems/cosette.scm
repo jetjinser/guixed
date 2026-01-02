@@ -6,7 +6,7 @@
   #:use-module (rosenthal services networking)
   #:export (%cosette))
 
-(use-service-modules file-sharing sysctl networking ssh upnp avahi)
+(use-service-modules file-sharing sysctl networking ssh upnp avahi dns)
 (use-package-modules bootloaders ssh shells)
 
 (define %transmission-daemon-configuration-directory
@@ -37,7 +37,22 @@
                         (dependencies (filter (file-system-mount-point-predicate "/")
                                               file-systems)))))
 
-      (services (append (list (service dhcpcd-service-type)
+      (services (append (list (service dhcpcd-service-type
+                                (dhcpcd-configuration (static '("domain_name_servers=127.0.0.1"))))
+                              (service dnsmasq-service-type
+                                (dnsmasq-configuration
+                                  (no-resolv? #t)
+                                  (listen-addresses '("127.0.0.1"))
+                                  (servers '("223.5.5.5"
+                                             "1.1.1.1"
+                                             "8.8.8.8"
+                                             ;; tailscale dns
+                                             "100.100.100.100"))
+                                  (cache-size 10000)))
+                              (simple-service 'tailscale-search etc-service-type
+                                ;; tailscale tsnet
+                                `(("resolv.conf.tail" ,(plain-file "resolv.conf.tail"
+                                                                   "search elk-agama.ts.net"))))
                               (service nftables-service-type
                                        (nftables-configuration
                                          (ruleset
@@ -92,7 +107,8 @@
                                                  (readymedia-media-directory (path "/srv/store/v")
                                                                              (types '(V)))))))
                               (service tailscale-service-type
-                                       (tailscale-configuration))
+                                       (tailscale-configuration
+                                         (extra-options '("-port" "41641"))))
                               (simple-service 'guix-moe guix-service-type
                                 (guix-extension
                                   (authorized-keys
@@ -102,7 +118,8 @@
                                          (plain-file "guix-moe.pub"
                                            "(public-key (ecc (curve Ed25519) (q #552F670D5005D7EB6ACF05284A1066E52156B51D75DE3EBD3030CD046675D543#)))")))
                                   (substitute-urls
-                                   '("https://cache-cdn.guix.moe")))))
+                                   '("https://cache-cdn.guix.moe"
+                                     "https://mirror.sjtu.edu.cn/guix")))))
                         (modify-services %base-services
                                          (sysctl-service-type
                                            config =>
