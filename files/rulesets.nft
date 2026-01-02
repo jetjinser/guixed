@@ -10,9 +10,6 @@ table inet filter {
 
     # allow from loopback
     iif lo accept
-    # drop connections to lo not coming from lo
-    iif != lo ip daddr 127.0.0.1/8 drop
-    iif != lo ip6 daddr ::1/128 drop
 
     # allow icmp
     ip protocol icmp accept
@@ -25,8 +22,10 @@ table inet filter {
     # ip saddr { 192.168.31.111, 192.168.31.222 } tcp dport 9001-9002 accept
     # ip saddr { 192.168.31.111, 192.168.31.222 } udp dport 1900 accept
 
-    # ip saddr 192.168.31.0-192.168.31.255 tcp dport 25565 accept
-    # ip saddr 192.168.31.0-192.168.31.255 udp dport 25565 accept
+    ip saddr 100.64.00.00/10 tcp dport 25565 accept
+    ip saddr 100.64.00.00/10 udp dport 25565 accept
+
+    udp dport 53580 accept
 
     # allow LAN
     ip saddr 192.168.0.0/16 accept
