@@ -24,4 +24,13 @@
           (make-channel-introduction
            "7677db76330121a901604dfbad19077893865f35"
            (openpgp-fingerprint
-            "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7")))))
+            "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))
+      (channel
+        (name 'bluebox)
+        (branch "main")
+        (url "https://codeberg.org/lapislazuli/bluebox")
+        (introduction
+         (make-channel-introduction
+          "63350484aaacc362aea28fb14236019fced4050f"
+          (openpgp-fingerprint
+           "5132 3571 CEED 988F 52FC 467C 6F98 DBF3 EA7F 4B37")))))
