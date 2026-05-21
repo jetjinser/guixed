@@ -1,0 +1,11 @@
+plugin pppoe.so
+nic-wan
+
+user = REDACTED
+password = REDACTED
+
+noipdefault
+defaultroute
+nodetach
+hide-password
++ipv6
