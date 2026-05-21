@@ -22,8 +22,7 @@ table inet filter {
     # ip saddr { 192.168.31.111, 192.168.31.222 } tcp dport 9001-9002 accept
     # ip saddr { 192.168.31.111, 192.168.31.222 } udp dport 1900 accept
 
-    ip saddr 100.64.00.00/10 tcp dport 25565 accept
-    ip saddr 100.64.00.00/10 udp dport 25565 accept
+    ip saddr 100.64.00.00/10 accept
 
     udp dport 53580 accept
 
