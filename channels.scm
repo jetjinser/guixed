@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://codeberg.org/guix/guix.git")
        (branch "master")
-       (commit "e20ff3658f0d0fe007f72b2ea51b2ad3f4aaba51")
+       (commit "ddd26bef7e41d56b6a3de9838a8c41c7a39c55c9")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -12,7 +12,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "a3f4e7bff779da4593a2922516064a8edaafa3e6")
+       (commit "5f2630e69fbbe9e79c350a67545f0fef7e93e223")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -27,4 +27,14 @@
         (make-channel-introduction
          "7677db76330121a901604dfbad19077893865f35"
          (openpgp-fingerprint
-          "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7")))))
+          "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))
+      (channel
+       (name 'bluebox)
+       (url "https://codeberg.org/lapislazuli/bluebox")
+       (branch "main")
+       (commit "f7f3b1565d626099dd68aae20abb36371ab8a9af")
+       (introduction
+        (make-channel-introduction
+         "63350484aaacc362aea28fb14236019fced4050f"
+         (openpgp-fingerprint
+          "5132 3571 CEED 988F 52FC  467C 6F98 DBF3 EA7F 4B37")))))
