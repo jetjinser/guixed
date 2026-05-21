@@ -1,0 +1,56 @@
+listen_port = 15353
+# prometheus_listen_addr = "http://herb:15354"
+directory = "/var/lib/hickory-dns"
+user = "hickory-dns"
+group = "hickory-dns"
+
+[[zones]]
+zone = "."
+zone_type = "External"
+
+[[zones.stores]]
+type = "blocklist"
+lists = ["blocklist.txt"]
+sinkhole_ipv4 = "192.0.2.1"
+sinkhole_ipv6 = "::ffff:c0:0:2:1"
+wildcard_match = true
+block_message = "Blocked by local DNS filter"
+
+## remember the port, defaults: 53 for Udp & Tcp, 853 for Tls and 443 for Https.
+##   Tls and/or Https require features tls-aws-lc-rs, tls-ring, https-aws-lc-rs and/or https-ring.
+[[zones.stores]]
+type = "forward"
+
+[[zones.stores.name_servers]]
+ip = "1.1.1.1"
+trust_negative_responses = false
+connections = [
+  { port = 53, protocol = { type = "udp" } }
+]
+
+[[zones.stores.name_servers]]
+ip = "8.8.8.8"
+trust_negative_responses = false
+connections = [
+  { port = 53, protocol = { type = "udp" } }
+]
+
+[[zones.stores.name_servers]]
+ip = "9.9.9.9"
+trust_negative_responses = false
+connections = [
+  { port = 53, protocol = { type = "udp" } }
+]
+
+[[zones.stores.name_servers]]
+ip = "223.5.5.5"
+trust_negative_responses = false
+connections = [
+  { port = 53, protocol = { type = "udp" } }
+]
+
+[zones.stores.options]
+timeout = 3
+positive_max_ttl = 3600
+negative_max_ttl = 3600
+edns_payload_len = 1232

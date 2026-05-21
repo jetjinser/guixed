@@ -1,0 +1,11 @@
+plugin pppoe.so
+nic-wan
+
+user "18960317230"
+password "123457"
+
+noipdefault
+defaultroute
+nodetach
+hide-password
++ipv6
