@@ -4,8 +4,7 @@
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix build-system copy)
-  #:use-module (gnu packages compression)
-  #:export (pbh))
+  #:use-module (gnu packages compression))
 
 (define-public pbh
  (package
@@ -26,5 +25,3 @@
    (synopsis "PeerBanHelper")
    (description "Automatically block unwanted, leeches and abnormal BT peers with support for customized and cloud rules.")
    (license (list license:gpl3))))
-
-pbh
