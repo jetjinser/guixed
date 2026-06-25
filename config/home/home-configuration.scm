@@ -30,19 +30,11 @@
   (package
     (inherit neovim)
     (propagated-inputs
-     ;; bundled tree-sitters, neovim assumes that these are available.
-     ;; See https://neovim.io/doc/user/treesitter.html#treesitter-parsers
-     (list tree-sitter-c
-           tree-sitter-lua
-           tree-sitter-markdown
-           tree-sitter-vim
-           tree-sitter-vimdoc
-
-           tree-sitter-scheme
-           ; tree-sitter-fennel
-           tree-sitter-caddy
-
-           tree-sitter-query))))
+      (cons* tree-sitter-scheme
+             ; tree-sitter-fennel
+             tree-sitter-caddy
+             tree-sitter-json
+             (map cadr propagated-inputs)))))
 
 (home-environment
   (packages (list neovim/parsers git tmux curl
