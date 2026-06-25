@@ -1,5 +1,6 @@
 (define-module (config build noxcaddy)
   #:use-module (guix gexp)
+  #:use-module (guix utils)
   #:use-module (guix packages)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system go)
@@ -41,8 +42,9 @@ versions (commits, branches) or empty version."
 
 (define* (make-caddy-source #:key
                              caddy-version
-                             (caddy-module "github.com/caddyserver/caddy")
-                             (plugins '()))
+                             [caddy-module "github.com/caddyserver/caddy"]
+                             [plugins '()]
+                             go)
   "Return a computed-file containing a minimal Go module source that
 imports Caddy core plus the given PLUGINS via blank imports.
 
@@ -54,50 +56,53 @@ This source is designed to be fed to 'go-mod-vendor' to resolve all
 transitive dependencies, producing a vendor/ tree that can be used
 in an offline go-build-system build."
 
-  (define (resolve-caddy-path)
+  (define caddy-import-path
     (versioned-module-path caddy-module caddy-version))
 
-  (define (resolve-plugin-path path ver)
-    (versioned-module-path path ver))
-
-  (define caddy-import-path (resolve-caddy-path))
-
-  (define plugin-imports
-    (map (lambda (p)
-           (let ((path (resolve-plugin-path (car p) (cdr p))))
-             (format #f "    _ \"~a\"" path)))
-         plugins))
-
-  (define plugin-requires
-    (map (lambda (p)
-           (let ((path (resolve-plugin-path (car p) (cdr p))))
-             (format #f "    ~a ~a" path (cdr p))))
-         plugins))
+  (define-values (plugin-imports plugin-requires)
+    (unzip2
+      (map (lambda (p)
+             (let* ([path (versioned-module-path (car p) (cdr p))]
+                    [ver  (cdr p)])
+               (list (format #f "_ \"~a\"" path)
+                     (format #f "~a ~a" path ver))))
+           plugins)))
 
   (define main-content
-    (string-append
-     "package main\n\n"
-     "import (\n"
-     "    caddycmd \"" caddy-import-path "/cmd\"\n"
-     "\n"
-     "    _ \"" caddy-import-path "/modules/standard\"\n"
-     (string-join plugin-imports "\n")
-     "\n"
-     ")\n\n"
-     "func main() {\n"
-     "    caddycmd.Main()\n"
-     "}\n"))
+    (format #f
+      "package main
 
+import (
+    caddycmd \"~a/cmd\"
+
+    _ \"~a/modules/standard\"
+~{    ~a~^~%~}
+)
+
+func main() {
+    caddycmd.Main()
+}
+"
+      caddy-import-path
+      caddy-import-path
+      plugin-imports))
+
+  ;; maybe go init?
   (define go-mod-content
-    (string-append
-     "module caddy\n\n"
-     "go 1.22\n\n"
-     "require (\n"
-     (format #f "    ~a ~a" caddy-import-path caddy-version)
-     "\n"
-     (string-join plugin-requires "\n")
-     "\n"
-     ")\n"))
+    (format #f
+      "module caddy
+
+go ~a
+
+require (
+    ~a ~a
+~{    ~a~^~%~}
+)
+"
+      (version-major+minor (package-version go))
+      caddy-import-path
+      caddy-version
+      plugin-requires))
 
   (computed-file
    (simple-format #f "caddy-source-~aplugins" (length plugins))
@@ -200,7 +205,8 @@ There are two usage styles:
                             (error "either #:version or #:caddy is required"))]
          [src (make-caddy-source
                 #:caddy-version caddy-version
-                #:plugins       plugins)])
+                #:plugins       plugins
+                #:go            go-pkg)])
     (package
       (name (string-join (cons "caddy" (map (compose basename car) plugins)) "-"))
       (version caddy-version)
