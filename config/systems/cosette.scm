@@ -222,51 +222,51 @@ valid users = jinser"))))
                             (service postgresql-service-type
                                      (postgresql-configuration
                                        (postgresql postgresql)))
-                            (service prometheus-node-exporter-service-type
-                                     (prometheus-node-exporter-configuration
-                                       (package prometheus-node-exporter)
-                                       (web-listen-address "cosette:9100")
-                                       (textfile-directory "/var/lib/prometheus-node-exporter")))
-                            (service prometheus-service-type
-                                     (prometheus-configuration
-                                       (listen-address "cosette:9090")
-                                       (shepherd-requirement '(tailscaled))
-                                       (config
-                                         #~'(("global"
-                                               ("scrape_interval" . "15s")
-                                               ("evaluation_interval" . "15s"))
-                                             ("scrape_configs" . #((("job_name"       . "~node")
-                                                                    ("static_configs" . #((("targets" . #("herb:9100"))
-                                                                                           ("labels"  . (("nodename" . "herb"))))
-                                                                                          (("targets" . #("cosette:9100"))
-                                                                                           ("labels"  . (("nodename" . "cosette")))))))
-                                                                   (("job_name"        . "~tailscale-metrics")
-                                                                    ("scrape_interval" . "30s")
-                                                                    ("static_configs"  . #((("targets" . #("cosette:5252"))
-                                                                                            ("labels"  . (("hostname" . "cosette"))))
-                                                                                           (("targets" . #("herb:5252"))
-                                                                                            ("labels"  . (("hostname" . "herb")))))))
-                                                                   (("job_name"        . "~dns")
-                                                                    ("scrape_interval" . "15s")
-                                                                    ("static_configs"  . #((("targets" . #("herb:15354"))
-                                                                                            ("labels"  . (("hostname" . "herb")))))))
-                                                                   (("job_name"        . "~mtail")
-                                                                    ("scrape_interval" . "15s")
-                                                                    ("static_configs"  . #((("targets" . #("herb:13903"))
-                                                                                            ("labels"  . (("hostname" . "herb")))))))
-                                                                   (("job_name"        . "~caddy")
-                                                                    ("scrape_interval" . "15s")
-                                                                    ("static_configs"  . #((("targets" . #("100.115.6.12:2019")) ; herb
-                                                                                            ("labels"  . (("hostname" . "herb")))))))))))))
-                            (service grafana-service-type
-                                     (grafana-configuration
-                                       (postgresql-password-file
-                                         (local-file-absolute-file-name (local-file "cosette/password-file.txt")))
-                                       (config
-                                         #~'(("paths"
-                                              ("data" . "/var/lib/grafana")
-                                              ("logs" . "/var/log/grafana")
-                                              ("http_addr" . "cosette"))))))
+                            ; (service prometheus-node-exporter-service-type
+                            ;          (prometheus-node-exporter-configuration
+                            ;            (package prometheus-node-exporter)
+                            ;            (web-listen-address "cosette:9100")
+                            ;            (textfile-directory "/var/lib/prometheus-node-exporter")))
+                            ; (service prometheus-service-type
+                            ;          (prometheus-configuration
+                            ;            (listen-address "cosette:9090")
+                            ;            (shepherd-requirement '(tailscaled))
+                            ;            (config
+                            ;              #~'(("global"
+                            ;                    ("scrape_interval" . "15s")
+                            ;                    ("evaluation_interval" . "15s"))
+                            ;                  ("scrape_configs" . #((("job_name"       . "~node")
+                            ;                                         ("static_configs" . #((("targets" . #("herb:9100"))
+                            ;                                                                ("labels"  . (("nodename" . "herb"))))
+                            ;                                                               (("targets" . #("cosette:9100"))
+                            ;                                                                ("labels"  . (("nodename" . "cosette")))))))
+                            ;                                        (("job_name"        . "~tailscale-metrics")
+                            ;                                         ("scrape_interval" . "30s")
+                            ;                                         ("static_configs"  . #((("targets" . #("cosette:5252"))
+                            ;                                                                 ("labels"  . (("hostname" . "cosette"))))
+                            ;                                                                (("targets" . #("herb:5252"))
+                            ;                                                                 ("labels"  . (("hostname" . "herb")))))))
+                            ;                                        (("job_name"        . "~dns")
+                            ;                                         ("scrape_interval" . "15s")
+                            ;                                         ("static_configs"  . #((("targets" . #("herb:15354"))
+                            ;                                                                 ("labels"  . (("hostname" . "herb")))))))
+                            ;                                        (("job_name"        . "~mtail")
+                            ;                                         ("scrape_interval" . "15s")
+                            ;                                         ("static_configs"  . #((("targets" . #("herb:13903"))
+                            ;                                                                 ("labels"  . (("hostname" . "herb")))))))
+                            ;                                        (("job_name"        . "~caddy")
+                            ;                                         ("scrape_interval" . "15s")
+                            ;                                         ("static_configs"  . #((("targets" . #("100.115.6.12:2019")) ; herb
+                            ;                                                                 ("labels"  . (("hostname" . "herb")))))))))))))
+                            ; (service grafana-service-type
+                            ;          (grafana-configuration
+                            ;            (postgresql-password-file
+                            ;              (local-file-absolute-file-name (local-file "cosette/password-file.txt")))
+                            ;            (config
+                            ;              #~'(("paths"
+                            ;                   ("data" . "/var/lib/grafana")
+                            ;                   ("logs" . "/var/log/grafana")
+                            ;                   ("http_addr" . "cosette"))))))
                             (simple-service 'guix-moe guix-service-type
                               (guix-extension
                                 (authorized-keys
