@@ -1,5 +1,5 @@
 listen_port = 15353
-# prometheus_listen_addr = "http://herb:15354"
+prometheus_listen_addr = "0.0.0.0:15354"
 directory = "/var/lib/hickory-dns"
 user = "hickory-dns"
 group = "hickory-dns"

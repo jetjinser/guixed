@@ -20,7 +20,8 @@ table inet filter {
         ip  daddr 224.0.0.251 udp dport 5353 accept
         ip6 daddr ff02::fb    udp dport 5353 accept
         # SSH
-        tcp dport 22 accept
+        tcp dport 22 accept # public
+        iifname "br0" tcp dport 2222 accept # control
         # ICMP
         iifname "br0"  ip  protocol icmp   accept
         iifname "br0"  ip6 nexthdr  icmpv6 accept

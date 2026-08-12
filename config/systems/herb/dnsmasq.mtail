@@ -1,0 +1,32 @@
+counter dnsmasq_queries_total by qtype, domain, client
+
+counter dnsmasq_forwarded_total by domain, upstream
+
+counter dnsmasq_cached_total by domain, answer
+
+counter dnsmasq_replies_total by domain, answer
+
+counter dnsmasq_dhcp_events_total by action
+
+
+###
+
+/dnsmasq\[\d+\]: query\[(?P<qtype>[A-Z0-9]+)\] (?P<domain>[^\s]+) from (?P<client>[^\s]+)/ {
+  dnsmasq_queries_total[$qtype][$domain][$client]++
+}
+
+/dnsmasq\[\d+\]: forwarded (?P<domain>[^\s]+) to (?P<upstream>[^\s]+)/ {
+  dnsmasq_forwarded_total[$domain][$upstream]++
+}
+
+/dnsmasq\[\d+\]: cached (?P<domain>[^\s]+) is (?P<answer>[^\s]+)/ {
+  dnsmasq_cached_total[$domain][$answer]++
+}
+
+/dnsmasq\[\d+\]: reply (?P<domain>[^\s]+) is (?P<answer>[^\s]+)/ {
+  dnsmasq_replies_total[$domain][$answer]++
+}
+
+/dnsmasq-dhcp\[\d+\]: (?P<action>[A-Z0-9_-]+)(\([^\)]+\))?/ {
+  dnsmasq_dhcp_events_total[$action]++
+}
