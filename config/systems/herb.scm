@@ -1,3 +1,7 @@
+;; TODO:
+;; 2. prometheus-node-exporter should require tailscale
+;; 3. pppoe-ipv6 failed for strange reason when os start
+
 (define-module (config systems herb)
   #:use-module (ice-9 textual-ports)
   #:use-module (config systems images nanopi-r2s)
@@ -7,9 +11,13 @@
   #:use-module (guix platforms arm)
   #:use-module (guix packages)
   #:use-module (gnu packages ssh)
+  #:use-module (gnu packages linux)
   #:use-module (gnu packages golang)
   #:use-module (gnu packages curl)
   #:use-module (gnu packages monitoring)
+  #:use-module (gnu packages books)
+  #:use-module (gnu packages compression)
+  #:use-module (gnu packages scheme)
   #:use-module ((gnu packages admin)      #:prefix admin:)
   #:use-module ((gnu packages dns)        #:prefix dns:)
   #:use-module ((gnu packages networking) #:prefix net:)
@@ -27,20 +35,47 @@
   #:use-module (rosenthal services networking)
   #:use-module (rosenthal services web)
   #:use-module (config services networking)
+  #:use-module (config services monitoring)
   #:use-module (config build noxcaddy)
   #:export (%herb herb-raw-image))
 
 (define caddy/porkbun/ddns
   (caddy-with-plugins
     #:caddy       web:caddy
-    #:plugins     '(("github.com/caddy-dns/porkbun"      . "v0.3.1")
-                    ("github.com/mholt/caddy-dynamicdns" . "v0.0.0-20251231002810-1af4f8876598"))
-    #:vendor-hash "0ap9bq4w7d7wzwrv1h102l12k9k136bc3xbna5n0difiaskm0fi9"
+    #:plugins     '(("github.com/caddy-dns/porkbun"       . "v0.3.1")
+                    ("github.com/mholt/caddy-dynamicdns"  . "v0.0.0-20251231002810-1af4f8876598")
+                    ("github.com/mholt/caddy-l4"          . "v0.1.1")
+                    ("github.com/greenpau/caddy-security" . "v1.1.62"))
+    #:vendor-hash "1dr90zpcp0cxxxs4j9x1cr8pjickin1abqk8w74xba4zfci6287v"
     #:go          go-1.26))
 
 (define-syntax-rule (include-relative path)
   (call-with-input-file (string-append (dirname (current-filename)) path)
                         get-string-all))
+
+(define (substitute-file template replacements)
+  "Return a file-like object that is TEMPLATE with markers replaced.
+REPLACEMENTS is an alist of (MARKER . VALUE), where MARKER is a string
+and VALUE is either a string or a file-like object."
+  (computed-file "substituted-file"
+    (with-imported-modules '((guix build utils))
+      #~(begin
+          (use-modules (guix build utils))
+          (let ((out #$output))
+            (copy-file #$template out)
+            (substitute* out
+              #$@(map (lambda (replacement)
+                        (let ((marker (string-append "@@" (car replacement) "@@"))
+                              (value  (cdr replacement)))
+                          `((,marker) ,value)))
+                      replacements)))))))
+
+(define mtail-progs
+  (file-union "mtail-progs"
+    `(("dnsmasq.mtail" ,(local-file "herb/dnsmasq.mtail")))))
+
+(define %dns-log-group
+  (user-group (name "dns-log") (system? #t)))
 
 ;; gnu/system/image.scm
 (define root-partition
@@ -66,8 +101,10 @@
   (udev-rule
     "10-link-name.rules"
     (string-append
-      "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"6e:c9:82:b9:b4:e8\", NAME=\"wan\"\n"
-      "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"6e:c9:82:b9:b4:e9\", NAME=\"lan\"")))
+      "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"6e:c9:82:b9:b4:e8\", NAME=\"wan\", "
+      "RUN+=\"/bin/sh -c 'echo f > /sys/class/net/wan/queues/rx-0/rps_cpus && echo 32768 > /sys/class/net/wan/queues/rx-0/rps_flow_cnt'\"\n"
+      "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"6e:c9:82:b9:b4:e9\", NAME=\"lan\", "
+      "RUN+=\"/bin/sh -c 'echo f > /sys/class/net/lan/queues/rx-0/rps_cpus && echo 32768 > /sys/class/net/lan/queues/rx-0/rps_flow_cnt'\"")))
 
 (define %herb
   (let ([base nanopi-r2s-barebones-os])
@@ -87,8 +124,6 @@
          ;; ---
          admin:pfetch
          admin:tcpdump
-         admin:dhcpcd
-         net:arp-scan
          net:sing-box
          curl
          `(,dns:isc-bind "utils")
@@ -103,7 +138,6 @@
                        (flags '(no-suid no-dev no-exec))
                        (check? #f)
                        (create-mount-point? #t))
-                     ;; TODO: required by syslogd
                      (file-system
                        (device      "none")
                        (mount-point "/var/log")
@@ -119,6 +153,8 @@
                      ;   (check? #f)
                      ;   (create-mount-point? #t))
                      %base-file-systems))
+     (groups (cons* %dns-log-group
+                    (operating-system-groups base)))
      (services
        (cons* (service avahi-service-type
                        (avahi-configuration
@@ -130,83 +166,97 @@
                          (permit-root-login 'prohibit-password)
                          (authorized-keys
                            (let [(dorothy (local-file "../../files/dorothy.pub"))
-                                 (cosette (local-file "../../files/cosette.pub"))]
-                             `(("jinser" ,dorothy ,cosette)
-                               ("root"   ,dorothy ,cosette))))
-                         (port-number 22)))
+                                 (cosette (local-file "../../files/cosette.pub"))
+                                 (hooray  (local-file "../../files/hooray.pub"))]
+                             `(("jinser" ,dorothy ,cosette ,hooray)
+                               ("root"   ,dorothy ,cosette ,hooray))))
+                         (port-number 2222)))
               (service resize-file-system-service-type
                        (resize-file-system-configuration
                          (file-system root-file-system)))
-              (udev-rules-service 'link-name %link-name-rule)
-              (service pppoe-service-type
-                       (pppoe-configuration
-                         (peer-file (local-file "herb/pppoe.peer"))))
-              (service dhcpcd-service-type
-                       (dhcpcd-configuration
-                         (interfaces '("ppp0"))
-                         (shepherd-provision '(pppoe-ipv6))
-                         (shepherd-requirement '(pppoe))
-                         (extra-content (include-relative "/herb/dhcpcd.tail"))))
-              (service nftables-service-type*
-                       (nftables-configuration*
-                         (ruleset (local-file "herb/ruleset.nft"))))
-              (service dnsmasq-service-type
-                       (dnsmasq-configuration
-                         (no-resolv? #t)
-                         (no-hosts? #t)
-                         (servers '("127.0.0.1#15353"))
-                         (listen-addresses '("127.0.0.1" "::1"))
-                         (conf-file (list (local-file "herb/dnsmasq.conf")))))
-              (service hickory-dns-service-type
-                       (hickory-dns-configuration
-                         (config-file (local-file "herb/named.toml"))))
-              (simple-service 'blocklist-updater
-                              shepherd-root-service-type
-                              (list update-blocklist-timer))
+              ; (udev-rules-service 'link-name %link-name-rule)
+              ; (service pppoe-service-type
+              ;          (pppoe-configuration
+              ;            (peer-file (local-file "herb/pppoe.peer"))))
+              ; (service dhcpcd-service-type
+              ;          (dhcpcd-configuration
+              ;            (interfaces '("ppp0"))
+              ;            (shepherd-provision '(pppoe-ipv6))
+              ;            (shepherd-requirement '(pppoe))
+              ;            (extra-content (include-relative "/herb/dhcpcd.tail"))))
+              ; (service nftables-service-type*
+              ;          (nftables-configuration*
+              ;            (ruleset (local-file "herb/ruleset.nft"))))
+              ; (service dnsmasq-service-type
+              ;          (dnsmasq-configuration
+              ;            (no-resolv? #t)
+              ;            (no-hosts? #t)
+              ;            (servers '("127.0.0.1#15353"))
+              ;            (listen-addresses '("127.0.0.1" "::1"))
+              ;            (conf-file (list (local-file "herb/dnsmasq.conf")))))
+              ; (service hickory-dns-service-type
+              ;          (hickory-dns-configuration
+              ;            (config-file (local-file "herb/named.toml"))))
+              ; (simple-service 'blocklist-updater
+              ;                 shepherd-root-service-type
+              ;                 (list update-blocklist-timer))
               (service tailscale-service-type
                        (tailscale-configuration
                          (extra-options '("-port" "41641"))))
-              (service prometheus-node-exporter-service-type
-                       (prometheus-node-exporter-configuration
-                         (package prometheus-node-exporter)
-                         (web-listen-address "100.115.6.12:9100")))
-              (service caddy-service-type
-                       (caddy-configuration
-                         (caddy caddy/porkbun/ddns)
-                         (caddyfile (local-file "herb/caddyfile"))))
-              (service static-networking-service-type
-                       (list
-                         (static-networking
-                           (addresses (list (network-address
-                                              (device "lo")
-                                              (value "127.0.0.1/8"))))
-                           (requirement '())
-                           (provision '(loopback)))
-                         (static-networking
-                           (provision '(wan-ready))
-                           (requirement '(udev))
-                           (links (list (network-link
-                                          (name "wan")
-                                          (arguments '((up . #t))))))
-                           (addresses '()))
-                         (static-networking
-                           (provision '(br0-device))
-                           (links (list (network-link
-                                          (name "br0")
-                                          (type 'bridge)
-                                          (arguments '()))))
-                           (addresses '()))
-                         (static-networking
-                           (provision '(networking))
-                           (requirement '(wan-ready br0-device))
-                           (links (list (network-link
-                                          (name "lan")
-                                          (arguments '((master . "br0")
-                                                       (up     . #t))))))
-                           (addresses (list (network-address
-                                             (device "br0")
-                                             (value "192.168.1.1/24"))))
-                           (name-servers '("127.0.0.1")))))
+              ; (service prometheus-node-exporter-service-type
+              ;          (prometheus-node-exporter-configuration
+              ;            (package prometheus-node-exporter)
+              ;            (web-listen-address "100.115.6.12:9100")))
+              ; (service caddy-service-type
+              ;          (caddy-configuration
+              ;            (caddy caddy/porkbun/ddns)
+              ;            (shepherd-requirement '(networking tailscaled))
+              ;            (caddyfile
+              ;              (substitute-file
+              ;                (local-file "herb/main.caddy")
+              ;                `(("SICP_HTML_DIR" . ,(file-append book-sicp "/share/doc/sicp/html"))
+              ;                  ("XZ_HTML_DIR"   . ,(file-append xz        "/share/doc/xz/api")))))))
+              ; (service sing-box-configuration
+              ;          (config-file (local-file "herb/sing.json")))
+              ; (service mtail-service-type
+              ;          (mtail-configuration
+              ;            (port 13903)
+              ;            (progs-dir mtail-progs)
+              ;            (logs '("/var/log/dnsmasq.log"))
+              ;            (group "dns-log")))
+              ; (service static-networking-service-type
+              ;          (list
+              ;            (static-networking
+              ;              (addresses (list (network-address
+              ;                                 (device "lo")
+              ;                                 (value "127.0.0.1/8"))))
+              ;              (requirement '())
+              ;              (provision '(loopback)))
+              ;            (static-networking
+              ;              (provision '(wan-ready))
+              ;              (requirement '(udev))
+              ;              (links (list (network-link
+              ;                             (name "wan")
+              ;                             (arguments '((up . #t))))))
+              ;              (addresses '()))
+              ;            (static-networking
+              ;              (provision '(br0-device))
+              ;              (links (list (network-link
+              ;                             (name "br0")
+              ;                             (type 'bridge)
+              ;                             (arguments '()))))
+              ;              (addresses '()))
+              ;            (static-networking
+              ;              (provision '(networking))
+              ;              (requirement '(wan-ready br0-device))
+              ;              (links (list (network-link
+              ;                             (name "lan")
+              ;                             (arguments '((master . "br0")
+              ;                                          (up     . #t))))))
+              ;              (addresses (list (network-address
+              ;                                (device "br0")
+              ;                                (value "192.168.1.1/24"))))
+              ;              (name-servers '("127.0.0.1")))))
               (modify-services services
                 ;; The server must trust the Guix packages you build. If you add the signing-key
                 ;; manually it will be overridden on next `guix deploy` giving
@@ -221,12 +271,15 @@
                                      (sysctl-configuration
                                        (inherit config)
                                        (settings (append
-                                                   '(("net.ipv4.ip_forward"          . "1")
-                                                     ("net.ipv6.conf.all.forwarding" . "1")
-                                                     ("net.ipv6.conf.all.accept_ra"  . "2"))
+                                                   '(("net.ipv4.ip_forward"            . "1")
+                                                     ("net.ipv6.conf.all.forwarding"   . "1")
+                                                     ("net.ipv6.conf.all.accept_ra"    . "2")
+                                                     ("net.core.netdev_budget"         . "600")
+                                                     ("net.core.netdev_budget_usecs"   . "8000")
+                                                     ("net.core.rps_sock_flow_entries" . "600"))
                                                    (sysctl-configuration-settings config)))))
-                (delete static-networking-service-type)
-                (delete dhcpcd-service-type)
+                ; (delete static-networking-service-type)
+                ; (delete dhcpcd-service-type)
                 (delete nscd-service-type)
                 ;; SSH only
                 (delete console-font-service-type)
