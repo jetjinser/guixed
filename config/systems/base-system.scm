@@ -33,8 +33,9 @@
                   (group "users")
                   (shell (file-append fish "/bin/fish"))
                   (home-directory "/home/jinser")
-                  (supplementary-groups '("wheel" "netdev" "transmission"
-                                          "audio" "video" "readymedia")))
+                  (supplementary-groups '("wheel" "netdev"
+                                          "audio" "video"  "readymedia"
+                                          "cgroup")))
                  %base-user-accounts))
 
     (packages (lset-difference eqv? %base-packages (list nvi mg)))

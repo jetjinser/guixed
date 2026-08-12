@@ -5,16 +5,122 @@
   #:use-module (config services avahi-publish)
   #:use-module (rosenthal services networking)
   #:use-module (rosenthal services monitoring)
+  #:use-module (rosenthal services bittorrent)
+  #:use-module (gnu system accounts)
   #:use-module (gnu packages monitoring)
   #:use-module (gnu services monitoring)
+  #:use-module (gnu services containers)
   #:export (%cosette))
 
 (use-service-modules file-sharing sysctl networking ssh upnp avahi dns virtualization samba
                      databases)
 (use-package-modules bootloaders ssh shells databases)
 
-(define %transmission-daemon-configuration-directory
-  "/var/lib/transmission-daemon")
+(define +immich-ver+ "v3.0.1")
+(define immich-service
+  (simple-service 'immich-provisioning
+    oci-service-type
+    (oci-extension
+      (networks
+        (list
+          (oci-network-configuration (name "immich-net"))))
+      (volumes
+        (list
+          (oci-volume-configuration (name "immich-model-cache"))
+          (oci-volume-configuration (name "immich-db-data"))
+          (oci-volume-configuration (name "immich-server-data"))))
+      (containers
+        (list
+          (oci-container-configuration
+            (network "immich-net")
+            (image   (string-append "ghcr.io/immich-app/immich-server" ":" +immich-ver+))
+            (provision "immich-server")
+            (requirement '[immich-db immich-kv immich-machine-learning])
+            (ports '(("2283" . "2283")))
+            (auto-start? #t)
+            (respawn? #t)
+            (volumes
+              '(("immich-server-data" . "/data")))
+            (environment
+              '(("DB_HOSTNAME"      . "immich-db")
+                ("DB_PORT"          . "5432")
+                ("DB_USERNAME"      . "immich")
+                ("DB_PASSWORD"      . "internal")
+                ("DB_DATABASE_NAME" . "immich")
+                ("REDIS_HOSTNAME"   . "immich-kv")
+                ("REDIS_PORT"       . "6379"))))
+          (oci-container-configuration
+            (network "immich-net")
+            (image   (string-append "ghcr.io/immich-app/immich-machine-learning" ":" +immich-ver+))
+            (provision "immich-machine-learning")
+            (auto-start? #t)
+            (respawn? #t)
+            (volumes
+              '(("immich-model-cache" . "/cache"))))
+          (oci-container-configuration
+            (network "immich-net")
+            (image   "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23")
+            (provision "immich-db")
+            (auto-start? #t)
+            (respawn? #t)
+            (environment
+              '(("POSTGRES_PASSWORD"    . "internal")
+                ("POSTGRES_USER"        . "immich")
+                ("POSTGRES_DB"          . "immich")
+                ("POSTGRES_INITDB_ARGS" . "--data-checksums")))
+            (volumes
+              '(("immich-db-data" . "/var/lib/postgresql/data"))))
+          (oci-container-configuration
+            (network "immich-net")
+            (image   "docker.io/valkey/valkey:9@sha256:4963247afc4cd33c7d3b2d2816b9f7f8eeebab148d29056c2ca4d7cbc966f2d9")
+            (provision "immich-kv")
+            (auto-start? #t)
+            (respawn? #t)))))))
+
+(define pbh-service
+  (simple-service 'pbh-provisioning
+    oci-service-type
+    (oci-extension
+      (containers
+        (list
+          (oci-container-configuration
+            (network     "host")
+            (image       "registry.cn-hangzhou.aliyuncs.com/ghostchu/peerbanhelper:latest")
+            (provision   "pbh")
+            (auto-start? #t)
+            (respawn?    #t)
+            (volumes
+              '(("/var/lib/pbh" . "/app/data")))))))))
+
+(define %qbittorrent-config-file
+  (local-file "cosette/qbittorrent.conf"))
+(define qbittorrent-config-activation
+  #~(begin
+      (use-modules (srfi srfi-1)
+                   (srfi srfi-26)
+                   (guix build utils))
+      (let* ((user (getpwnam "qbittorrent"))
+             (uid (passwd:uid user))
+             (gid (passwd:gid user))
+             (profile-dir "/var/lib/qbittorrent")
+             (config-dir (string-append profile-dir "/qBittorrent/config"))
+             (cache-dir (string-append profile-dir "/qBittorrent/cache"))
+             (target-file (string-append config-dir "/qBittorrent.conf")))
+
+        (mkdir-p config-dir)
+        (mkdir-p cache-dir)
+
+        (unless (file-exists? target-file)
+          (copy-file #$%qbittorrent-config-file target-file))
+
+        (chown profile-dir uid gid)
+        (for-each
+         (cut chown <> uid gid)
+         (find-files profile-dir #:directories? #t)))))
+(define qbittorrent-service
+  (service qbittorrent-service-type
+    (qbittorrent-configuration
+      (webui-port 9001))))
 
 (define %cosette
   (operating-system
@@ -79,29 +185,10 @@
                                        (wide-area? #t)))
                             (service avahi-publish-service-type
                                      (avahi-publish-configuration))
-                            (service transmission-daemon-service-type
-                                     (transmission-daemon-configuration
-                                       (rpc-port 9001)
-                                       (rpc-authentication-required? #t)
-                                       (rpc-username "jinser")
-                                       (rpc-password "{2b79a09b99bc2b99da06665666853bd337052a05ypW43WFG")
-                                       (rpc-whitelist '("127.0.0.1" "::1" "192.168.*.*" "100.*.*.*"))
-                                       (download-dir "/srv/store/t")
-                                       (incomplete-dir-enabled? #t)
-                                       (incomplete-dir (string-append %transmission-daemon-configuration-directory
-                                                                      "/.incomplete"))
-                                       (speed-limit-up-enabled? #t)
-                                       (speed-limit-up 800)
-                                       (alt-speed-enabled? #t)
-                                       (alt-speed-up 450) ; 450 KB/s
-                                       (alt-speed-down 10000000) ; 10 GB/s
-                                       (alt-speed-time-enabled? #t)
-                                       (alt-speed-time-begin 480) ; 8am
-                                       (alt-speed-time-end 60) ; 1am
-                                       (download-queue-size 10) ; default = 5
-                                       (ratio-limit-enabled? #t)
-                                       (ratio-limit 1.0)
-                                       (lpd-enabled? #t)))
+                            qbittorrent-service
+                            (simple-service 'qbittorrent-config-activation
+                              activation-service-type
+                              qbittorrent-config-activation)
                             (service readymedia-service-type
                                      (readymedia-configuration
                                        (friendly-name "cosette-landing")
@@ -183,7 +270,23 @@ valid users = jinser"))))
                             (service qemu-binfmt-service-type
                               (qemu-binfmt-configuration
                                 (platforms (lookup-qemu-platforms "aarch64" "riscv64"))))
-                            (service elogind-service-type))
+                            (service elogind-service-type)
+
+                            (service rootless-podman-service-type
+                              (rootless-podman-configuration
+                                (subgids
+                                 (list (subid-range (name "jinser"))))
+                                (subuids
+                                 (list (subid-range (name "jinser"))))))
+                            (service oci-service-type
+                              (oci-configuration
+                                (runtime 'podman)))
+                            (simple-service 'oci-limits pam-limits-service-type
+                              (list
+                                (pam-limits-entry "oci-container" 'both 'nofile 65536)))
+
+                            pbh-service
+                            immich-service)
                       (modify-services %base-services
                                        (sysctl-service-type
                                          config =>
