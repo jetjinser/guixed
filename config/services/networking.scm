@@ -158,10 +158,16 @@
             (provision '(pppoe))
             (requirement '(user-processes wan-ready loopback))
             (documentation "Run PPPoE connection using pppd.")
-            (start #~(make-forkexec-constructor
-                      (list #$(file-append ppp "/sbin/pppd")
-                            "file" #$peer-file)
-                      #:log-file #$log-file))
+            (start
+              #~(lambda ()
+                  (let ([pid (fork+exec-command
+                               (list #$(file-append ppp "/sbin/pppd")
+                                     "file" #$peer-file)
+                               #:log-file #$log-file)])
+                    (alarm 60) ; timeout in seconds
+                    (format #t "Waiting for ppp0 interface...~%")
+                    (wait-for-link "ppp0")
+                    pid)))
             (stop #~(make-kill-destructor))))))
 
 (define pppoe-service-type
