@@ -1,70 +1,24 @@
-table inet filter {
-    chain input {
-        type filter hook input priority filter; policy drop;
+table inet global {
 
-        iif lo accept
-        iifname "tailscale0" accept
-
-        ct state established,related accept
-
-        iifname "ppp0" udp dport 41641 accept
-
-        # DHCPv4 client
-        iifname "br0" udp dport { 67, 68 } accept
-        # DHCPv6 client（server on UDP 547，client source 546）
-        iifname "ppp0" udp dport { 546, 547 } accept
-        iifname "br0" udp dport { 546, 547 } accept
-        # DNS
-        iifname "br0" udp dport 53 accept
-        # mDNS（IPv4 / IPv6）
-        ip  daddr 224.0.0.251 udp dport 5353 accept
-        ip6 daddr ff02::fb    udp dport 5353 accept
-        # SSH
-        tcp dport 22 accept # public
-        iifname "br0" tcp dport 2222 accept # control
-        # ICMP
-        iifname "br0"  ip  protocol icmp   accept
-        iifname "br0"  ip6 nexthdr  icmpv6 accept
-        iifname "ppp0" ip  protocol icmp   accept
-        iifname "ppp0" ip6 nexthdr  icmpv6 accept
-
-        # Caddy HTTP/HTTPS
-        iifname "ppp0" tcp dport { 443, 11443 } accept
-        iifname "br0"  tcp dport { 443, 11443 } accept
-    }
-
-    chain output {
-        type filter hook output priority filter; policy accept;
-
-        # TCP MSS
-        oifname "ppp0" tcp flags syn tcp option maxseg size set rt mtu
-        oifname "ppp0" ip6 nexthdr tcp tcp flags syn tcp option maxseg size set rt mtu
-        # DNS sinkhole: 192.0.2.1 (RFC 5737 TEST-NET-1) returned by blocklist;
-        # reject quickly to avoid timeouts
-        ip daddr 192.0.2.1 reject
-    }
-
-    chain forward {
-        type filter hook forward priority filter; policy drop;
-
-        iifname "br0" oifname "ppp0" accept
-        iifname "ppp0" oifname "br0" ct state established,related accept
-        iifname "br0" oifname "br0" accept
-
-        # ICMPv6
-        ip6 nexthdr icmpv6 accept
-        # TCP MSS
-        oifname "ppp0" tcp flags syn tcp option maxseg size set rt mtu
-        oifname "ppp0" ip6 nexthdr tcp tcp flags syn tcp option maxseg size set rt mtu
-        # DNS sinkhole: 192.0.2.1 (RFC 5737 TEST-NET-1) returned by blocklist;
-        # reject quickly to avoid timeouts
-        ip daddr 192.0.2.1 reject
-    }
-}
-
-table ip nat {
+    # 1. NAT 伪装（内网上网的核心，不能省）
     chain postrouting {
         type nat hook postrouting priority srcnat; policy accept;
-        oifname "ppp0" masquerade
+        # 只要流量是从 WAN 口发出的，自动做 IP 伪装
+        oifname "wan" masquerade
+    }
+
+    # 2. 包转发：默认全放行，不做任何拦截
+    chain forward {
+        type filter hook forward priority filter; policy accept;
+    }
+
+    # 3. 入站：默认全放行，确保 DNS、DHCP、SSH 等服务绝对不会被卡
+    chain input {
+        type filter hook input priority filter; policy accept;
+    }
+
+    # 4. 出站：默认全放行
+    chain output {
+        type filter hook output priority filter; policy accept;
     }
 }
