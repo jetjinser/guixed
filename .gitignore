@@ -1,1 +1,7 @@
 .blue-store/
+
+# Secrets: keep real values local only, commit *.example templates instead.
+secrets/*
+!secrets/*.example
+config/systems/herb/main.caddy
+config/systems/cosette/password-file.txt
