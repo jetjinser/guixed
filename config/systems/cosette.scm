@@ -1,6 +1,7 @@
 (define-module (config systems cosette)
   #:use-module (gnu)
   #:use-module (gnu services desktop)
+  #:use-module (gnu services shepherd)
   #:use-module (config systems base-system)
   #:use-module (config services avahi-publish)
   #:use-module (rosenthal services networking)
@@ -103,8 +104,8 @@
              (uid (passwd:uid user))
              (gid (passwd:gid user))
              (profile-dir "/var/lib/qbittorrent")
-             (config-dir (string-append profile-dir "/qBittorrent/config"))
-             (cache-dir (string-append profile-dir "/qBittorrent/cache"))
+             (config-dir  (string-append profile-dir "/qBittorrent/config"))
+             (cache-dir   (string-append profile-dir "/qBittorrent/cache"))
              (target-file (string-append config-dir "/qBittorrent.conf")))
 
         (mkdir-p config-dir)
@@ -177,7 +178,7 @@
                                          (let [(dorothy (local-file "../../files/dorothy.pub"))
                                                (cosette (local-file "../../files/cosette.pub"))]
                                            `(("jinser" ,dorothy ,cosette)
-                                             ("root" ,dorothy ,cosette))))
+                                             ("root"   ,dorothy ,cosette))))
                                        (port-number 22)))
                             (service avahi-service-type
                                      (avahi-configuration
@@ -274,7 +275,9 @@ valid users = jinser"))))
                                          "(public-key (ecc (curve Ed25519) (q #374EC58F5F2EC0412431723AF2D527AD626B049D657B5633AAAEBC694F3E33F9#)))")
                                        ;; 2025-10-29 起用的新公鑰
                                        (plain-file "guix-moe.pub"
-                                         "(public-key (ecc (curve Ed25519) (q #552F670D5005D7EB6ACF05284A1066E52156B51D75DE3EBD3030CD046675D543#)))")))
+                                         "(public-key (ecc (curve Ed25519) (q #552F670D5005D7EB6ACF05284A1066E52156B51D75DE3EBD3030CD046675D543#)))")
+                                       (plain-file "dorothy.pub"
+                                         "(public-key (ecc (curve Ed25519) (q #C4167FEBE89D1D5E4BC4AE1B01892E4E15008A392AAA3B02B291CFA6D39385E2#)))")))
                                 (substitute-urls
                                  '("https://cache-cdn.guix.moe"
                                    "https://mirror.sjtu.edu.cn/guix"
