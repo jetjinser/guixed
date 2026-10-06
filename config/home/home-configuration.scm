@@ -46,7 +46,7 @@
                  (abbreviations '(("g" . "git")))))
               (service home-fish-plugin-direnv-service-type)
               (service home-xdg-configuration-files-service-type
-                (list `("git/config" ,(local-file "../../files/gitconfig"))))
+                (list `("git/config" ,(local-file "../../assets/gitconfig"))))
               (service home-ssh-agent-service-type
                        (home-ssh-agent-configuration
                         (extra-options '("-t" "1h30m")))))))

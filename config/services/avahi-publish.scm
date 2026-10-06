@@ -10,7 +10,7 @@
   #:export (avahi-publish-configuration
             avahi-publish-service-type))
 
-(define %publish-script (local-file "../../files/publish.scm"))
+(define %publish-script (local-file "../../assets/publish.scm"))
 
 (define-record-type* <avahi-publish-configuration>
   avahi-publish-configuration make-avahi-publish-configuration

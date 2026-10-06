@@ -245,9 +245,9 @@ and @code{aic8800_fdrv} provides the netdev.")
                          (openssh openssh-sans-x)
                          ; (permit-root-login 'prohibit-password)
                          (authorized-keys
-                           (let [(dorothy (local-file "../../files/dorothy.pub"))
-                                 (cosette (local-file "../../files/cosette.pub"))
-                                 (hooray  (local-file "../../files/hooray.pub"))]
+                           (let [(dorothy (local-file "../../assets/keys/dorothy.pub"))
+                                 (cosette (local-file "../../assets/keys/cosette.pub"))
+                                 (hooray  (local-file "../../assets/keys/hooray.pub"))]
                              `(("jinser" ,dorothy ,cosette ,hooray)
                                ("root"   ,dorothy ,cosette ,hooray))))
                          (port-number 2222)))

@@ -46,8 +46,8 @@
                                        (openssh openssh-sans-x)
                                        (permit-root-login 'prohibit-password)
                                        (authorized-keys
-                                         `(("jinser" ,(local-file "../files/dorothy.pub"))
-                                           ("root" ,(local-file "../files/dorothy.pub"))))
+                                         `(("jinser" ,(local-file "../assets/keys/dorothy.pub"))
+                                           ("root" ,(local-file "../assets/keys/dorothy.pub"))))
                                        (port-number 22))))
                       %base-services))
 

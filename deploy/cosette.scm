@@ -5,7 +5,7 @@
              (systems hosts cosette))
 
 (define cosette
-  (call-with-input-file "files/cosette.host.pub" get-string-all))
+  (call-with-input-file "assets/keys/cosette.host.pub" get-string-all))
 
 (list (machine
         (operating-system %cosette)

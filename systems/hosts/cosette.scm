@@ -167,7 +167,7 @@
                             (service nftables-service-type
                                      (nftables-configuration
                                        (ruleset
-                                         (local-file "../../files/rulesets.nft"
+                                         (local-file "../../assets/rulesets.nft"
                                                      "rulesets.nft"))))
                             (service ntp-service-type (ntp-configuration))
                             (service openssh-service-type
@@ -175,8 +175,8 @@
                                        (openssh openssh-sans-x)
                                        (permit-root-login 'prohibit-password)
                                        (authorized-keys
-                                         (let [(dorothy (local-file "../../files/dorothy.pub"))
-                                               (cosette (local-file "../../files/cosette.pub"))]
+                                         (let [(dorothy (local-file "../../assets/keys/dorothy.pub"))
+                                               (cosette (local-file "../../assets/keys/cosette.pub"))]
                                            `(("jinser" ,dorothy ,cosette)
                                              ("root"   ,dorothy ,cosette))))
                                        (port-number 22)))
