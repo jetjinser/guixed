@@ -63,15 +63,6 @@
 (define %herb-wpa-passphrase
   (read-secret "secrets/herb.wpa"))
 
-(define %link-name-rule
-  (udev-rule
-    "10-link-name.rules"
-    (string-append
-      "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"6e:c9:82:b9:b4:e8\", NAME=\"wan\", "
-      "RUN+=\"/bin/sh -c 'echo f > /sys/class/net/wan/queues/rx-0/rps_cpus && echo 32768 > /sys/class/net/wan/queues/rx-0/rps_flow_cnt'\"\n"
-      "ACTION==\"add\", SUBSYSTEM==\"net\", ATTR{address}==\"6e:c9:82:b9:b4:e9\", NAME=\"lan\", "
-      "RUN+=\"/bin/sh -c 'echo f > /sys/class/net/lan/queues/rx-0/rps_cpus && echo 32768 > /sys/class/net/lan/queues/rx-0/rps_flow_cnt'\"")))
-
 ;;; AICSemi AIC8800D80 USB Wi-Fi 6 adapter (a69c:8d80, e.g. AX900-class).
 ;;;
 ;;; Driver tree: <https://github.com/shenmintao/aic8800d80> (vendor code).
