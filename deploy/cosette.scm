@@ -2,7 +2,7 @@
              (gnu machine ssh)
              (guix gexp)
              (rnrs io ports)
-             (config systems cosette))
+             (systems hosts cosette))
 
 (define cosette
   (call-with-input-file "files/cosette.host.pub" get-string-all))

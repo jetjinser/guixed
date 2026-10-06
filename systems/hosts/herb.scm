@@ -1,6 +1,6 @@
-(define-module (config systems herb)
+(define-module (systems hosts herb)
   #:use-module (ice-9 textual-ports)
-  #:use-module (config systems images nanopi-r2s)
+  #:use-module (systems boards nanopi-r2s)
   #:use-module (config utils secrets)
   #:use-module (gnu)
   #:use-module (gnu image)

@@ -1,4 +1,4 @@
-(define-module (config systems images tspi-rk3566)
+(define-module (systems boards tspi-rk3566)
   #:use-module (gnu)
   #:use-module (gnu bootloader)
   #:use-module (gnu bootloader u-boot)
@@ -158,7 +158,7 @@ rtw88 WiFi driver and the btrtl Bluetooth driver.")
   (package
     (name "brcmfmac43430-board-config")
     (version "1.0")
-    (source (local-file "../mizuki/nvram_ap6212a.txt"))
+    (source (local-file "files/nvram_ap6212a.txt"))
     (build-system trivial-build-system)
     (arguments
      (list #:modules '((guix build utils))

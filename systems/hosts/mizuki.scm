@@ -1,4 +1,4 @@
-(define-module (config systems mizuki)
+(define-module (systems hosts mizuki)
   #:use-module (gnu)
   #:use-module (gnu image)
   #:use-module (gnu system image)
@@ -11,7 +11,7 @@
   #:use-module (gnu services ssh)
   #:use-module (gnu services networking)
   #:use-module (guix platforms arm)
-  #:use-module (config systems images tspi-rk3566)
+  #:use-module (systems boards tspi-rk3566)
   #:use-module (config utils secrets)
   #:export (%mizuki mizuki-raw-image))
 

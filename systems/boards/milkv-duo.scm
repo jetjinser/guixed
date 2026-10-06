@@ -1,4 +1,4 @@
-(define-module (config systems images milkv-duo)
+(define-module (systems boards milkv-duo)
   #:use-module (gnu)
   #:use-module (gnu bootloader)
   #:use-module (gnu bootloader u-boot)

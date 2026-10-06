@@ -3,5 +3,5 @@
 # Secrets: keep real values local only, commit *.example templates instead.
 secrets/*
 !secrets/*.example
-config/systems/herb/main.caddy
-config/systems/cosette/password-file.txt
+systems/hosts/herb/main.caddy
+systems/hosts/cosette/password-file.txt

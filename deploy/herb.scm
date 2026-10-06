@@ -1,4 +1,4 @@
-(use-modules (config systems herb)
+(use-modules (systems hosts herb)
              (gnu machine)
              (gnu machine ssh))
 

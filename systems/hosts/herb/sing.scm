@@ -1,4 +1,4 @@
-(define-module (config systems herb sing)
+(define-module (systems hosts herb sing)
   #:use-module (guix gexp)
   #:use-module (config packages networking))
 

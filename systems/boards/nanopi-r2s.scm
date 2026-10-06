@@ -1,4 +1,4 @@
-(define-module (config systems images nanopi-r2s)
+(define-module (systems boards nanopi-r2s)
   #:use-module (gnu)
   #:use-module (gnu bootloader)
   #:use-module (gnu bootloader u-boot)

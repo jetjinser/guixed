@@ -1,4 +1,4 @@
-(use-modules (config systems mizuki)
+(use-modules (systems hosts mizuki)
              (gnu machine)
              (gnu machine ssh))
 

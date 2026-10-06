@@ -1,4 +1,4 @@
-(define-module (config systems base-system)
+(define-module (systems base)
   #:use-module (gnu)
   #:use-module (gnu system nss)
   #:use-module (srfi srfi-1)
@@ -46,8 +46,8 @@
                                        (openssh openssh-sans-x)
                                        (permit-root-login 'prohibit-password)
                                        (authorized-keys
-                                         `(("jinser" ,(local-file "../../files/dorothy.pub"))
-                                           ("root" ,(local-file "../../files/dorothy.pub"))))
+                                         `(("jinser" ,(local-file "../files/dorothy.pub"))
+                                           ("root" ,(local-file "../files/dorothy.pub"))))
                                        (port-number 22))))
                       %base-services))
 
