@@ -4,8 +4,10 @@
 ;;; Based on Hilton's blueprint.scm
 
 (use-modules (ice-9 match)
+             (ice-9 ftw)
              (ice-9 threads)
              (srfi srfi-1)
+             (srfi srfi-13)
              (srfi srfi-26) ; cut(e)
              (blue build)
              (blue computation)
@@ -23,6 +25,14 @@
   `("--keep-failed"
     "--keep-going"
     "--verbosity=1"))
+
+(define (deploy-targets)
+  "Return the sorted list of host names that have a deploy/HOST.scm file."
+  (sort (filter-map (lambda (file)
+                      (and (string-suffix? ".scm" file)
+                           (string-drop-right file 4)))
+                    (scandir "deploy"))
+        string<?))
 
 (define (print-header header target)
   (format (current-output-port) "\t~a\t~a\n" header target))
@@ -62,7 +72,7 @@ Deploy all Guix Systems in this repository or only those matching SYSTEMS."))
                              `(,@%build-options "-x" "--" "sh" "--login" "-c" ,#%?CMD)
                              %build-options))
                      args))))
-         `(("herb")))))
+         (map (lambda (name) (cons name '())) (deploy-targets)))))
 
 ;; temporary
 (define-command (run-command arguments)
