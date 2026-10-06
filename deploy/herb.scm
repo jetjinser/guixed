@@ -1,7 +1,6 @@
-(define-module (config systems)
-  #:use-module (config systems herb)
-  #:use-module (gnu machine)
-  #:use-module (gnu machine ssh))
+(use-modules (config systems herb)
+             (gnu machine)
+             (gnu machine ssh))
 
 (list
   (machine (operating-system %herb)

@@ -1,9 +1,8 @@
-(define-module (config systems deploy)
-  #:use-module (gnu machine)
-  #:use-module (gnu machine ssh)
-  #:use-module (guix gexp)
-  #:use-module (rnrs io ports)
-  #:use-module (config systems cosette))
+(use-modules (gnu machine)
+             (gnu machine ssh)
+             (guix gexp)
+             (rnrs io ports)
+             (config systems cosette))
 
 (define cosette
   (call-with-input-file "files/cosette.host.pub" get-string-all))
