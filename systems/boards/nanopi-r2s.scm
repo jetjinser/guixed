@@ -13,7 +13,7 @@
   #:use-module (gnu system file-systems)
   #:use-module (gnu system image)
   #:use-module (gnu system locale)
-  #:use-module (ice-9 match)
+  #:use-module (config utils linux)
   #:export (nanopi-r2s-barebones-os
             nanopi-r2s-image-type
             nanopi-r2s-barebones-raw-image))
@@ -28,18 +28,6 @@
   (bootloader
     (inherit u-boot-orangepi-r1-plus-lts-rk3328-bootloader)
     (package u-boot-nanopi-r2s)))
-
-(define (configs->strings options)
-  (map (match-lambda
-         ((option . 'm)
-          (string-append option "=m"))
-         ((option . #t)
-          (string-append option "=y"))
-         ((option . #f)
-          (string-append option "=n"))
-         ((option . string)
-          (string-append option "=\"" string "\"")))
-       options))
 
 (define-public linux-libre-nanopi-r2s
                   ;; nftables support

@@ -22,7 +22,7 @@
   #:use-module (gnu system file-systems)
   #:use-module (gnu system image)
   #:use-module (gnu system locale)
-  #:use-module (ice-9 match)
+  #:use-module (config utils linux)
   #:export (rtw88-rtw8723d-firmware
             rtl8723ds-bt-firmware
             rtl8723ds-bt-config
@@ -228,14 +228,6 @@ rtw88 WiFi driver and the btrtl Bluetooth driver.")
                                  (stat:size (stat itb))
                                  image
                                  8388608))))))
-
-(define (configs->strings options)
-  (map (match-lambda
-         [(option . 'm)     (string-append option "=m")]
-         [(option . #t)     (string-append option "=y")]
-         [(option . #f)     (string-append option "=n")]
-         [(option . string) (string-append option "=\"" string "\"")])
-       options))
 
 ;; 2. 内核定制：适配 RK3566 与网关/路由配置。
 ;;    基于 nonguix 的 vanilla（非 deblob）内核，以便加载 AP6212 等非自由固件。
