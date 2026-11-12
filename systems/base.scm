@@ -35,7 +35,7 @@
                   (home-directory "/home/jinser")
                   (supplementary-groups '("wheel" "netdev"
                                           "audio" "video"  "readymedia"
-                                          "cgroup")))
+                                          "cgroup" "kvm")))
                  %base-user-accounts))
 
     (packages (lset-difference eqv? %base-packages (list nvi mg)))
