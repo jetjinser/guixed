@@ -1,5 +1,8 @@
 .blue-store/
 
+# Local snapshots, may contain git history and secrets.
+backups/
+
 # Secrets: keep real values local only, commit *.example templates instead.
 secrets/*
 !secrets/*.example
