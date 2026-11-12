@@ -176,9 +176,10 @@
                                        (permit-root-login 'prohibit-password)
                                        (authorized-keys
                                          (let [(dorothy (local-file "../../assets/keys/dorothy.pub"))
-                                               (cosette (local-file "../../assets/keys/cosette.pub"))]
-                                           `(("jinser" ,dorothy ,cosette)
-                                             ("root"   ,dorothy ,cosette))))
+                                               (cosette (local-file "../../assets/keys/cosette.pub"))
+                                               (organ   (local-file "../../assets/keys/organ.pub"))]
+                                           `(("jinser" ,dorothy ,cosette ,organ)
+                                             ("root"   ,dorothy ,cosette ,organ))))
                                        (port-number 22)))
                             (service avahi-service-type
                                      (avahi-configuration
