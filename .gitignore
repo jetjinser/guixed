@@ -8,3 +8,4 @@ secrets/*
 !secrets/*.example
 systems/hosts/herb/main.caddy
 systems/hosts/cosette/password-file.txt
+systems/hosts/herb/pppoe.peer
