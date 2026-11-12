@@ -156,9 +156,9 @@
                                 (listen-addresses '("127.0.0.1"))
                                 (servers '("223.5.5.5"
                                            "1.1.1.1"
-                                           "8.8.8.8"
-                                           ;; tailscale dns
-                                           "100.100.100.100"))
+                                           "8.8.8.8"))
+                                (extra-options
+                                  '("--server=/ts.net/100.100.100.100"))
                                 (cache-size 10000)))
                             (simple-service 'tailscale-search etc-service-type
                               ;; tailscale tsnet
