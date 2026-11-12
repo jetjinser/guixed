@@ -280,9 +280,12 @@ valid users = jinser"))))
                                        (plain-file "dorothy.pub"
                                          "(public-key (ecc (curve Ed25519) (q #C4167FEBE89D1D5E4BC4AE1B01892E4E15008A392AAA3B02B291CFA6D39385E2#)))")))
                                 (substitute-urls
-                                 '("https://cache-cdn.guix.moe"
-                                   "https://mirror.sjtu.edu.cn/guix"
-                                   "https://mirror.sjtu.edu.cn/guix-bordeaux"))))
+                                 '("https://substitutes.nonguix.org"
+                                   "https://cache-cdn.guix.moe"
+                                   ;; "https://mirror.sjtu.edu.cn/guix"
+                                   ;; "https://mirror.sjtu.edu.cn/guix-bordeaux"
+                                   "https://bordeaux.guix.gnu.org"
+                                   "https://ci.guix.gnu.org"))))
                             (service qemu-binfmt-service-type
                               (qemu-binfmt-configuration
                                 (platforms (lookup-qemu-platforms "aarch64" "riscv64"))))
