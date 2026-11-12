@@ -39,6 +39,10 @@
 (define %mizuki-wpa-passphrase
   (read-secret "secrets/mizuki.wpa"))
 
+;; Account password hash, kept out of version control.
+(define %mizuki-password-hash
+  (read-secret "secrets/mizuki.passwd"))
+
 (define %mizuki
   (let ([base tspi-barebones-os])
     (operating-system
@@ -47,7 +51,7 @@
       (users (cons (user-account
                      (name "jinser")
                      (comment "Jinser Kafka")
-                     (password "$6$REDACTED")
+                     (password %mizuki-password-hash)
                      (group "users")
                      (supplementary-groups '("wheel")))
                    %base-user-accounts))

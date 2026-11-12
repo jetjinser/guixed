@@ -63,6 +63,10 @@
 (define %herb-wpa-passphrase
   (read-secret "secrets/herb.wpa"))
 
+;; Account password hash, kept out of version control.
+(define %herb-password-hash
+  (read-secret "secrets/herb.passwd"))
+
 ;;; AICSemi AIC8800D80 USB Wi-Fi 6 adapter (a69c:8d80, e.g. AX900-class).
 ;;;
 ;;; Driver tree: <https://github.com/shenmintao/aic8800d80> (vendor code).
@@ -194,7 +198,7 @@ and @code{aic8800_fdrv} provides the netdev.")
      (users (cons (user-account
                     (name "jinser")
                     (comment "Jinser Kafka")
-                    (password "$6$REDACTED")
+                    (password %herb-password-hash)
                     (group "users")
                     (supplementary-groups '("wheel")))
               %base-user-accounts))
